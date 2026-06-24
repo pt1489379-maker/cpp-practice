@@ -1,0 +1,52 @@
+"use client";
+
+import { useRef, useMemo } from "react";
+import { useFrame } from "@react-three/fiber";
+import * as THREE from "three";
+
+export default function Particles() {
+  const count = 2000;
+  const pointsRef = useRef<THREE.Points>(null);
+  
+  const [positions, scales] = useMemo(() => {
+    const positions = new Float32Array(count * 3);
+    const scales = new Float32Array(count);
+    for (let i = 0; i < count; i++) {
+      positions[i * 3] = (Math.random() - 0.5) * 20;
+      positions[i * 3 + 1] = (Math.random() - 0.5) * 20;
+      positions[i * 3 + 2] = (Math.random() - 0.5) * 20;
+      scales[i] = Math.random();
+    }
+    return [positions, scales];
+  }, [count]);
+
+  useFrame((state) => {
+    if (pointsRef.current) {
+      pointsRef.current.rotation.y = state.clock.elapsedTime * 0.05;
+      pointsRef.current.rotation.x = state.clock.elapsedTime * 0.02;
+    }
+  });
+
+  return (
+    <points ref={pointsRef}>
+      <bufferGeometry>
+        <bufferAttribute
+          attach="attributes-position"
+          args={[positions, 3]}
+        />
+        <bufferAttribute
+          attach="attributes-aScale"
+          args={[scales, 1]}
+        />
+      </bufferGeometry>
+      <pointsMaterial
+        size={0.05}
+        color="#88ccff"
+        transparent
+        opacity={0.6}
+        sizeAttenuation={true}
+        blending={THREE.AdditiveBlending}
+      />
+    </points>
+  );
+}
